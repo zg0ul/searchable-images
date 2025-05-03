@@ -1,103 +1,209 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Toaster, toast } from "sonner";
+import { useAuth } from "@/context/auth-provider";
+import { FileUpload } from "@/components/file-upload";
+import { SearchInput } from "@/components/search-input";
+import { ImageGallery } from "@/components/image-gallery";
+import { ImageDetailView } from "@/components/image-detail-view";
+import { Tables } from "@/lib/supabase";
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+type ImageWithMetadata = Tables["images"] & {
+  metadata: Tables["image_metadata"] | null;
+};
+
+export default function HomePage() {
+  const router = useRouter();
+  const { user, isLoading, signOut } = useAuth();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [images, setImages] = useState<ImageWithMetadata[]>([]);
+  const [selectedImage, setSelectedImage] = useState<ImageWithMetadata | null>(
+    null
+  );
+  const [isLoadingImages, setIsLoadingImages] = useState(false);
+
+  // Redirect to auth page if not authenticated
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push("/auth");
+    }
+  }, [user, isLoading, router]);
+
+  // Fetch images when the user is authenticated or search query changes
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchImages = async () => {
+      setIsLoadingImages(true);
+      try {
+        const queryParams = new URLSearchParams();
+        if (searchQuery) {
+          queryParams.set("query", searchQuery);
+        }
+
+        const response = await fetch(`/api/images/search?${queryParams}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch images");
+        }
+
+        const data = await response.json();
+        setImages(data.images || []);
+      } catch (error) {
+        console.error("Error fetching images:", error);
+        toast.error("Failed to load images. Please try again.");
+      } finally {
+        setIsLoadingImages(false);
+      }
+    };
+
+    fetchImages();
+  }, [user, searchQuery]);
+
+  // Handle image upload
+  const handleFilesAccepted = async (files: File[]) => {
+    if (!user) {
+      toast.error("You must be logged in to upload images");
+      return;
+    }
+
+    setIsUploading(true);
+
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        toast.info(`Uploading ${file.name}...`);
+
+        const response = await fetch("/api/images/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to upload image");
+        }
+
+        const data = await response.json();
+
+        // Add the newly uploaded image to the images array
+        setImages((prevImages) => [data.image, ...prevImages]);
+
+        toast.success(`${file.name} uploaded successfully!`);
+
+        if (data.warning) {
+          toast.warning(data.warning);
+        }
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        toast.error(`Failed to upload ${file.name}. Please try again.`);
+      }
+    }
+
+    setIsUploading(false);
+  };
+
+  // Handle search
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+  };
+
+  // Handle image selection
+  const handleImageClick = (image: ImageWithMetadata) => {
+    setSelectedImage(image);
+  };
+
+  // Handle closing the detail view
+  const handleCloseDetailView = () => {
+    setSelectedImage(null);
+  };
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast.success("Logged out successfully");
+      router.push("/auth");
+    } catch (error) {
+      console.error("Error logging out:", error);
+      toast.error("Failed to log out. Please try again.");
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-t-blue-500 border-gray-200 rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect to auth page via useEffect
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <Toaster position="top-right" />
+
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Your Image Collection</h1>
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 bg-green-400 hover:bg-green-600 text-black rounded-lg text-sm font-medium"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+          Sign Out
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="md:col-span-2">
+          <SearchInput onSearch={handleSearch} initialQuery={searchQuery} />
+        </div>
+
+        <div className="md:col-span-1 flex items-start">
+          <FileUpload
+            onFilesAccepted={handleFilesAccepted}
+            isUploading={isUploading}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        </div>
+      </div>
+
+      <div className="mt-10">
+        {isLoadingImages ? (
+          <div className="flex justify-center py-12">
+            <div className="w-10 h-10 border-4 border-t-blue-500 border-gray-200 rounded-full animate-spin"></div>
+          </div>
+        ) : (
+          <>
+            {searchQuery && (
+              <h2 className="text-xl font-semibold mb-4">
+                {images.length > 0
+                  ? `Found ${images.length} result${
+                      images.length !== 1 ? "s" : ""
+                    } for "${searchQuery}"`
+                  : `No results found for "${searchQuery}"`}
+              </h2>
+            )}
+
+            <ImageGallery images={images} onImageClick={handleImageClick} />
+          </>
+        )}
+      </div>
+
+      {selectedImage && (
+        <ImageDetailView
+          image={selectedImage}
+          onClose={handleCloseDetailView}
+        />
+      )}
     </div>
   );
 }
