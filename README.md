@@ -4,15 +4,12 @@
 ![Google Gemini](https://img.shields.io/badge/Google%20Gemini-AI-orange)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-latest-38B2AC)
 
-A modern web application that allows users to upload, organize, and search through their images using natural language. Powered by Google's Gemini AI for intelligent image analysis and Supabase for storage and authentication.
+A modern web application that allows users to upload, organize, and search through their images using keywords. Powered by Google's Gemini AI for intelligent image analysis and Supabase for storage and authentication.
 
 ## ✨ Features
 
 - **AI-Powered Image Analysis**: Automatically extracts objects, scenes, colors, and more from your images
-- **Natural Language Search**: Find images using everyday language (e.g., "sunset at the beach" or "photos with my dog")
 - **Secure Authentication**: User authentication and authorization with Supabase
-- **Responsive Design**: Optimized for all device sizes
-- **Fast Image Upload**: Efficient image uploading and processing
 - **Detailed Image View**: View comprehensive metadata about each image
 
 ## 🧠 How It Works
@@ -29,12 +26,7 @@ This application leverages several cutting-edge technologies to provide a seamle
    - Recognizes colors, moods, and aesthetic elements
    - Generates descriptive tags and a comprehensive description
 
-3. **Natural Language Search**:
-   - Converts user queries into database search parameters
-   - Matches against AI-generated metadata
-   - Returns relevance-ranked results
-
-4. **Secure Data Management**:
+3. **Secure Data Management**:
    - Row Level Security ensures users can only access their own images
    - Authenticated API endpoints prevent unauthorized access
    - Optimized database queries for fast performance
@@ -69,8 +61,8 @@ This application leverages several cutting-edge technologies to provide a seamle
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/ai-image-search.git
-cd ai-image-search
+git clone https://github.com/zg0ul/searchable-images.git
+cd searchable-images
 ```
 
 ### 2. Install dependencies
@@ -232,9 +224,6 @@ The search functionality uses PostgreSQL's powerful text search capabilities:
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📜 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 🙏 Acknowledgements
 

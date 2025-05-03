@@ -66,6 +66,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    const lowerQuery = query.toLowerCase();
     // For search queries, we need to use full text search on the metadata
     const { data: searchResults, error: searchError } = await supabase
       .from("image_metadata")
