@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Toaster, toast } from "sonner";
 import { useAuth } from "@/context/auth-provider";
 import { FileUpload } from "@/components/file-upload";
@@ -16,8 +16,10 @@ type ImageWithMetadata = Tables["images"] & {
 
 export default function HomePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get("query") || "";
+
   const { user, isLoading, signOut } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [images, setImages] = useState<ImageWithMetadata[]>([]);
   const [selectedImage, setSelectedImage] = useState<ImageWithMetadata | null>(
@@ -109,7 +111,17 @@ export default function HomePage() {
 
   // Handle search
   const handleSearch = (query: string) => {
-    setSearchQuery(query);
+    // Update the URL with the search query
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (query) {
+      params.set("query", query);
+    } else {
+      params.delete("query");
+    }
+
+    // Use replace to avoid building up history entries for every search
+    router.replace(`?${params.toString()}`);
   };
 
   // Handle image selection
@@ -150,7 +162,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 ">
       <Toaster position="top-right" />
 
       <div className="flex justify-between items-center mb-8">

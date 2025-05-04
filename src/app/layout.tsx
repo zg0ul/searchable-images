@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Image Search",
-  description: "Search your images using natural language",
+  title: "Searchable Images",
+  description: "Search your images using simple keywords.",
 };
 
 export default function RootLayout({

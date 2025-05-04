@@ -40,12 +40,12 @@ export async function GET(request: NextRequest) {
           `
           *,
           metadata: image_metadata!image_metadata_image_id_fkey(*)
-        `
+        `,
+          { count: "exact" }
         )
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
-        .range(offset, offset + limit - 1)
-        .limit(limit);
+        .range(offset, offset + limit - 1);
 
       if (error) {
         console.error("Error fetching images:", error);
@@ -66,9 +66,11 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // For search queries, we need to search case-insensitively
     const lowerQuery = query.toLowerCase();
-    // For search queries, we need to use full text search on the metadata
-    const { data: searchResults, error: searchError } = await supabase
+
+    // First, get all metadata for the user's images
+    const { data: allMetadata, error: metadataError } = await supabase
       .from("image_metadata")
       .select(
         `
@@ -76,24 +78,41 @@ export async function GET(request: NextRequest) {
         image:images!image_metadata_image_id_fkey(*)
       `
       )
-      .or(
-        `description.ilike.%${query}%,tags.cs.{${query}},objects.cs.{${query}},scenes.cs.{${query}},colors.cs.{${query}}`
-      )
-      .eq("image.user_id", userId)
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1)
-      .limit(limit);
+      .eq("image.user_id", userId);
 
-    if (searchError) {
-      console.error("Error searching images:", searchError);
+    if (metadataError) {
+      console.error("Error fetching metadata:", metadataError);
       return NextResponse.json(
-        { error: "Failed to search images" },
+        { error: "Failed to fetch metadata" },
         { status: 500 }
       );
     }
 
+    // Filter the results in JavaScript for case-insensitive array search
+    const filteredResults = allMetadata.filter((metadata) => {
+      // Check description (case-insensitive)
+      if (
+        metadata.description &&
+        metadata.description.toLowerCase().includes(lowerQuery)
+      ) {
+        return true;
+      }
+
+      // Check arrays (tags, objects, scenes, colors) case-insensitively
+      const arrayFields = ["tags", "objects", "scenes", "colors"];
+      return arrayFields.some((field) => {
+        const array = metadata[field] || [];
+        return array.some((item: any) =>
+          item.toLowerCase().includes(lowerQuery)
+        );
+      });
+    });
+
+    // Apply pagination to filtered results
+    const paginatedResults = filteredResults.slice(offset, offset + limit);
+
     // Reformat the results to match the expected structure
-    const images = searchResults.map((result) => ({
+    const images = paginatedResults.map((result) => ({
       ...result.image,
       metadata: {
         id: result.id,
@@ -112,8 +131,8 @@ export async function GET(request: NextRequest) {
       pagination: {
         page,
         limit,
-        total: searchResults.length,
-        totalPages: Math.ceil(searchResults.length / limit),
+        total: filteredResults.length,
+        totalPages: Math.ceil(filteredResults.length / limit),
       },
     });
   } catch (error) {

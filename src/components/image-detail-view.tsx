@@ -36,15 +36,15 @@ export function ImageDetailView({ image, onClose }: ImageDetailViewProps) {
         <X className="w-5 h-5" />
       </button>
 
-      <div className="relative flex w-full max-w-5xl max-h-[90vh] bg-white rounded-lg overflow-hidden">
+      <div className="relative flex w-full max-w-5xl max-h-[90vh] bg-neutral-900 rounded-lg overflow-hidden">
         {/* Image container */}
-        <div className="relative w-2/3 h-[90vh]">
+        <div className="relative w-2/3 h-[90vh] overflow-hidden rounded-lg">
           <Image
             src={image.url}
             alt={image.file_name}
             fill
             priority
-            className="object-contain"
+            className="object-contain overflow-hidden"
           />
         </div>
 
@@ -58,15 +58,15 @@ export function ImageDetailView({ image, onClose }: ImageDetailViewProps) {
           {image.metadata ? (
             <div className="mt-6 space-y-4">
               <div>
-                <h3 className="text-sm font-medium text-gray-700">
+                <h3 className="text-sm font-medium text-gray-500">
                   Description
                 </h3>
                 <p className="mt-1 text-sm">{image.metadata.description}</p>
               </div>
 
-              {image.metadata.tags.length > 0 && (
+              {image.metadata.tags && image.metadata.tags.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700">Tags</h3>
+                  <h3 className="text-sm font-medium text-gray-500">Tags</h3>
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {image.metadata.tags.map((tag, index) => (
                       <span
@@ -80,9 +80,9 @@ export function ImageDetailView({ image, onClose }: ImageDetailViewProps) {
                 </div>
               )}
 
-              {image.metadata.objects.length > 0 && (
+              {image.metadata.objects && image.metadata.objects.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700">Objects</h3>
+                  <h3 className="text-sm font-medium text-gray-500">Objects</h3>
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {image.metadata.objects.map((object, index) => (
                       <span
@@ -96,9 +96,9 @@ export function ImageDetailView({ image, onClose }: ImageDetailViewProps) {
                 </div>
               )}
 
-              {image.metadata.scenes.length > 0 && (
+              {image.metadata.scenes && image.metadata.scenes.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700">Scenes</h3>
+                  <h3 className="text-sm font-medium text-gray-500">Scenes</h3>
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {image.metadata.scenes.map((scene, index) => (
                       <span
@@ -112,9 +112,9 @@ export function ImageDetailView({ image, onClose }: ImageDetailViewProps) {
                 </div>
               )}
 
-              {image.metadata.colors.length > 0 && (
+              {image.metadata.colors && image.metadata.colors.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700">Colors</h3>
+                  <h3 className="text-sm font-medium text-gray-500">Colors</h3>
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {image.metadata.colors.map((color, index) => (
                       <span

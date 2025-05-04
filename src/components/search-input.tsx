@@ -47,7 +47,7 @@ export function SearchInput({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={placeholder}
-          className="w-full py-2 pl-10 pr-10 bg-green-200 border rounded-lg border-green-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black"
+          className="w-full py-2 pl-10 pr-10 bg-emerald-100 border-2 rounded-lg border-emerald-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black"
         />
         {query && (
           <button
