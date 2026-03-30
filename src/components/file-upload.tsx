@@ -19,7 +19,7 @@ export function FileUpload({
         onFilesAccepted(acceptedFiles);
       }
     },
-    [onFilesAccepted]
+    [onFilesAccepted],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -35,26 +35,29 @@ export function FileUpload({
   return (
     <div
       {...getRootProps()}
-      className={`p-8 border-2 border-dashed rounded-lg 
-      ${isDragActive ? "border-blue-500 bg-blue-50" : "border-gray-300"} 
+      className={`h-[50px] px-4 border border-dashed rounded-xl transition-all flex items-center gap-3
+      ${isDragActive ? "border-emerald-500 bg-emerald-500/10" : "border-neutral-700 hover:border-neutral-600"}
       ${isUploading ? "opacity-60 cursor-not-allowed" : "cursor-pointer"}`}
     >
       <input {...getInputProps()} />
-      <div className="flex flex-col items-center justify-center gap-2 text-center">
-        <UploadCloud
-          className={`w-10 h-10 ${
-            isDragActive ? "text-blue-500" : "text-gray-400"
-          }`}
-        />
-        <p className="text-sm font-medium">
-          {isDragActive
-            ? "Drop the images here"
-            : "Drag & drop images here, or click to select"}
-        </p>
-        <p className="text-xs text-gray-500">
-          Supported: JPG, PNG, GIF, WebP (max 10MB)
-        </p>
-        {isUploading && <p className="text-sm text-blue-500">Uploading...</p>}
+      <UploadCloud
+        className={`w-5 h-5 shrink-0 ${
+          isDragActive ? "text-emerald-500" : "text-neutral-500"
+        }`}
+      />
+      <div className="flex items-center gap-2 overflow-hidden">
+        {isUploading ? (
+          <p className="text-sm text-emerald-400 animate-pulse">Uploading...</p>
+        ) : (
+          <>
+            <p className="text-sm text-neutral-400 truncate">
+              {isDragActive ? "Drop here" : "Upload"}
+            </p>
+            <p className="text-xs text-neutral-600 hidden sm:block">
+              JPG, PNG, GIF, WebP
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

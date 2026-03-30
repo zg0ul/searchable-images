@@ -20,18 +20,19 @@ export function ImageGallery({ images, onImageClick }: ImageGalleryProps) {
 
   if (images.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-        <p>No images found</p>
+      <div className="flex flex-col items-center justify-center py-20 text-neutral-500">
+        <p className="text-lg">No images yet</p>
+        <p className="text-sm mt-1">Upload some images to get started</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+    <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7">
       {images.map((image) => (
         <div
           key={image.id}
-          className="relative overflow-hidden bg-gray-100 rounded-lg aspect-square group"
+          className="relative overflow-hidden bg-neutral-800 rounded-xl aspect-square group cursor-pointer"
           onMouseEnter={() => setHoveredImageId(image.id)}
           onMouseLeave={() => setHoveredImageId(null)}
           onClick={() => onImageClick?.(image)}
@@ -40,27 +41,34 @@ export function ImageGallery({ images, onImageClick }: ImageGalleryProps) {
             src={image.url}
             alt={image.file_name}
             fill
-            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+            className="object-cover transition-all duration-300 group-hover:scale-105"
+          />
+
+          {/* Hover overlay */}
+          <div
+            className={`absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-200 ${
+              hoveredImageId === image.id ? "opacity-100" : "opacity-0"
+            }`}
           />
 
           {hoveredImageId === image.id && image.metadata && (
-            <div className="absolute inset-0 flex flex-col justify-end p-3 text-white bg-gradient-to-t from-black/70 via-black/30 to-transparent">
+            <div className="absolute inset-0 flex flex-col justify-end p-3 text-white">
               <p className="text-sm font-medium line-clamp-2">
                 {image.metadata.description}
               </p>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {image.metadata.tags &&
-                  image.metadata.tags.length > 0 &&
-                  image.metadata.tags.slice(0, 3).map((tag, index) => (
+              {image.metadata.tags && image.metadata.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {image.metadata.tags.slice(0, 3).map((tag, index) => (
                     <span
                       key={index}
-                      className="px-1.5 py-0.5 text-xs bg-white/20 rounded-full"
+                      className="px-2 py-0.5 text-xs bg-white/20 backdrop-blur-sm rounded-full"
                     >
                       {tag}
                     </span>
                   ))}
-              </div>
+                </div>
+              )}
             </div>
           )}
         </div>

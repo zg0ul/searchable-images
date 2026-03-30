@@ -23,7 +23,7 @@ export default function HomePage() {
   const [isUploading, setIsUploading] = useState(false);
   const [images, setImages] = useState<ImageWithMetadata[]>([]);
   const [selectedImage, setSelectedImage] = useState<ImageWithMetadata | null>(
-    null
+    null,
   );
   const [isLoadingImages, setIsLoadingImages] = useState(false);
 
@@ -151,8 +151,8 @@ export default function HomePage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-t-blue-500 border-gray-200 rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <div className="w-10 h-10 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-neutral-400">Loading...</p>
         </div>
       </div>
     );
@@ -163,53 +163,62 @@ export default function HomePage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 ">
-      <Toaster position="top-right" />
+    <div className="min-h-screen">
+      <Toaster position="top-right" theme="dark" />
 
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Your Image Collection</h1>
-        <button
-          onClick={handleLogout}
-          className="px-4 py-2 bg-green-400 hover:bg-green-600 text-black rounded-lg text-sm font-medium"
-        >
-          Sign Out
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <div className="md:col-span-2">
-          <SearchInput onSearch={handleSearch} initialQuery={searchQuery} />
-        </div>
-
-        <div className="md:col-span-1 flex items-start">
-          <FileUpload
-            onFilesAccepted={handleFilesAccepted}
-            isUploading={isUploading}
-          />
-        </div>
-      </div>
-
-      <div className="mt-10">
-        {isLoadingImages ? (
-          <div className="flex justify-center py-12">
-            <div className="w-10 h-10 border-4 border-t-blue-500 border-gray-200 rounded-full animate-spin"></div>
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-neutral-900/80 backdrop-blur-lg border-b border-neutral-800">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <h1 className="text-xl font-semibold text-white">
+              Image Collection
+            </h1>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 text-sm font-medium text-neutral-400 hover:text-white transition-colors"
+            >
+              Sign Out
+            </button>
           </div>
-        ) : (
-          <>
-            {searchQuery && (
-              <h2 className="text-xl font-semibold mb-4">
-                {images.length > 0
-                  ? `Found ${images.length} result${
-                      images.length !== 1 ? "s" : ""
-                    } for "${searchQuery}"`
-                  : `No results found for "${searchQuery}"`}
-              </h2>
-            )}
+        </div>
+      </header>
 
-            <ImageGallery images={images} onImageClick={handleImageClick} />
-          </>
-        )}
-      </div>
+      {/* Main content */}
+      <main className="container mx-auto px-4 py-6">
+        {/* Search and Upload section */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-8">
+          <div className="flex-1">
+            <SearchInput onSearch={handleSearch} initialQuery={searchQuery} />
+          </div>
+          <div className="sm:w-80">
+            <FileUpload
+              onFilesAccepted={handleFilesAccepted}
+              isUploading={isUploading}
+            />
+          </div>
+        </div>
+
+        {/* Gallery section */}
+        <div>
+          {isLoadingImages ? (
+            <div className="flex justify-center py-16">
+              <div className="w-8 h-8 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div>
+            </div>
+          ) : (
+            <>
+              {searchQuery && (
+                <p className="text-sm text-neutral-400 mb-6">
+                  {images.length > 0
+                    ? `${images.length} result${images.length !== 1 ? "s" : ""} for "${searchQuery}"`
+                    : `No results for "${searchQuery}"`}
+                </p>
+              )}
+
+              <ImageGallery images={images} onImageClick={handleImageClick} />
+            </>
+          )}
+        </div>
+      </main>
 
       {selectedImage && (
         <ImageDetailView
