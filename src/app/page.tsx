@@ -93,8 +93,9 @@ export default function HomePage() {
 
         const data = await response.json();
 
-        // Add the newly uploaded image to the images array
-        setImages((prevImages) => [data.image, ...prevImages]);
+        // Add the newly uploaded image with its metadata to the images array
+        const imageWithMetadata = { ...data.image, metadata: data.metadata };
+        setImages((prevImages) => [imageWithMetadata, ...prevImages]);
 
         toast.success(`${file.name} uploaded successfully!`);
 
