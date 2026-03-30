@@ -36,7 +36,8 @@ export default function HomePage() {
 
   // Fetch images when the user is authenticated or search query changes
   useEffect(() => {
-    if (!user) return;
+    const userId = user?.id;
+    if (!userId) return;
 
     const fetchImages = async () => {
       setIsLoadingImages(true);
@@ -62,7 +63,7 @@ export default function HomePage() {
     };
 
     fetchImages();
-  }, [user, searchQuery]);
+  }, [user?.id, searchQuery]);
 
   // Handle image upload
   const handleFilesAccepted = async (files: File[]) => {
