@@ -37,7 +37,7 @@ export async function analyzeImage(imageData: string, mimeType: string) {
   try {
     console.log("Analyzing image with Gemini...");
     // Access the newer Gemini 1.5 Flash model instead of the deprecated gemini-pro-vision
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
     // Create a prompt that extracts useful metadata
     const prompt = `

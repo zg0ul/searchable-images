@@ -67,10 +67,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get the public URL for the uploaded file
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("images").getPublicUrl(filePath);
+    const { data: signedUrlData, error: signedUrlError } =
+      await supabase.storage
+        .from("images")
+        .createSignedUrl(filePath, 60 * 60 * 24 * 30); // Available for 30 days
+
+    if (signedUrlError || !signedUrlData?.signedUrl) {
+      console.error("Error creating signed URL:", signedUrlError);
+      return NextResponse.json(
+        { error: "Failed to create signed URL" },
+        { status: 500 }
+      );
+    }
+
+    const signedUrl = signedUrlData.signedUrl;
 
     // Insert record into the images table
     const { data: imageData, error: imageError } = await supabase
@@ -81,7 +91,7 @@ export async function POST(request: NextRequest) {
         file_name: file.name,
         content_type: file.type,
         size: file.size,
-        url: publicUrl,
+        url: signedUrl,
       })
       .select()
       .single();
